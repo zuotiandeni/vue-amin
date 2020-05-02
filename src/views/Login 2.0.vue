@@ -66,7 +66,7 @@
               ></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" class="block" @click="getSms()">获取验证码</el-button>
+              <el-button type="success" class="block">获取验证码</el-button>
             </el-col>
           </el-row>
         </el-form-item>
@@ -85,11 +85,6 @@
 </template>
 
 <script>
-import { GetSms } from "@/api/login"
-import {xxxx} from "@/api/login.js";
-// 3.0中声明对象类型使用reactive，声明的那个数据时使用ref
-// eslint-disable-next-line no-unused-vars
-import { reactive, ref, isRef, toRefs, onMounted } from "@vue/composition-api";
 import {
   stripscript,
   validateEmail,
@@ -98,10 +93,9 @@ import {
 } from "@/utils/validate";
 export default {
   name: "login",
-  setup(props, context) {
-    // 这里面放置data数据，生命周期，自定义的函数
+  data() {
     // 验证用户名
-    let validateUsername = (rule, value, callback) => {
+    var validateUsername = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("请输入用户名"));
       } else if (validateEmail(value)) {
@@ -111,11 +105,11 @@ export default {
       }
     };
     // 验证密码
-    let validatePassword = (rule, value, callback) => {
+    var validatePassword = (rule, value, callback) => {
       console.log(stripscript(value));
 
-      ruleForm.password = stripscript(value);
-      value = ruleForm.password;
+      this.ruleForm.password = stripscript(value);
+      value = this.ruleForm.password;
       if (value === "") {
         callback(new Error("请输入密码"));
       } else if (validatePass(value)) {
@@ -125,22 +119,22 @@ export default {
       }
     };
     // 验证重复密码
-    let validatePasswords = (rule, value, callback) => {
-      if (model.value === "login") {
+    var validatePasswords = (rule, value, callback) => {
+      if (this.model == "login") {
         return callback();
       }
-      ruleForm.passwords = stripscript(value);
-      value = ruleForm.passwords;
+      this.ruleForm.passwords = stripscript(value);
+      value = this.ruleForm.passwords;
       if (value === "") {
         callback(new Error("请再次输入密码"));
-      } else if (value != ruleForm.password) {
+      } else if (value != this.ruleForm.password) {
         callback(new Error("密码不一致"));
       } else {
         callback();
       }
     };
     // 验证验证码
-    let validateCode = (rule, value, callback) => {
+    var validateCode = (rule, value, callback) => {
       if (value === "") {
         return callback(new Error("请输入验证码"));
       } else if (validateVcode(value)) {
@@ -149,69 +143,44 @@ export default {
         callback();
       }
     };
-    /**
-     * 声明数据
-     */
-    const menuTab = reactive([
-      { txt: "登录", current: true, type: "login" },
-      { txt: "注册", current: false, type: "register" }
-    ]);
-    // console.log(reactive)
-
-    // toRefs()将对象转为基础数据类型，解构
-    /*
-    function useMousePosition(){
-      const pos = reactive({
-        x: 0,
-        y: 1
-      });
-      return toRefs(pos);
-    }
-    const { x, y } = useMousePosition;
-    */
-
-    // 登录注册模块值
-    const model = ref("login");
-    console.log(model.value);
-    console.log(isRef(model) ? true : false);
-
-    // 表单数据
-    const ruleForm = reactive({
-      username: "",
-      password: "",
-      passwords: "",
-      code: ""
-    });
-    // 表单验证
-    const rules = reactive({
-      username: [{ validator: validateUsername, trigger: "blur" }],
-      password: [{ validator: validatePassword, trigger: "blur" }],
-      passwords: [{ validator: validatePasswords, trigger: "blur" }],
-      code: [{ validator: validateCode, trigger: "blur" }]
-    });
-    /**
-     * 生命周期
-     */
-    // 挂载完成
-    onMounted(() => {
-      
-    });
-
-    /**
-     * 声明函数
-     */
+    return {
+      menuTab: [
+        { txt: "登录", current: true, type: "login" },
+        { txt: "注册", current: false, type: "register" }
+      ],
+      // 登录注册模块值
+      model: "login",
+      // 表单数据
+      ruleForm: {
+        username: "",
+        password: "",
+        passwords: "",
+        code: ""
+      },
+      rules: {
+        username: [{ validator: validateUsername, trigger: "blur" }],
+        password: [{ validator: validatePassword, trigger: "blur" }],
+        passwords: [{ validator: validatePasswords, trigger: "blur" }],
+        code: [{ validator: validateCode, trigger: "blur" }]
+      }
+    };
+  },
+  created() {},
+  mounted() {
+    // 挂载完成触发
+  },
+  methods: {
     // vue数据驱动视图渲染；
-    const toggleMney = item => {
-      menuTab.forEach(elem => {
+    toggleMney(item) {
+      this.menuTab.forEach(elem => {
         elem.current = false;
       });
-      // 高光
       item.current = true;
       // 修改模块值
-      model.value = item.type;
-    };
-    const submitForm = formName => {
-      context.refs[formName].validate(valid => {
+      this.model = item.type;
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate(valid => {
         if (valid) {
           alert("submit!");
         } else {
@@ -219,27 +188,7 @@ export default {
           return false;
         }
       });
-    };
-    /**
-     * 提交表单 
-     */
-    // 获取验证码；
-    const getSms = (()=>{
-      let data = {
-        username: ruleForm.username,
-      }
-      GetSms(data);
-    })
-
-    return {
-      menuTab,
-      model,
-      toggleMney,
-      submitForm,
-      ruleForm,
-      rules,
-      getSms
-    };
+    }
   }
 };
 </script>
